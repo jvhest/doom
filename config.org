@@ -1,0 +1,475 @@
+#+TITLE: Doom Emacs Configuration
+#+AUTHOR: jvh
+#+DESCRIPTION: Personal Emacs config.
+#+STARTUP: showeverything
+#+PROPERTY: header-args:emacs-lisp :tangle ./config.el :mkdirp yes
+#+auto_tangle: t
+
+* Table of Contents :toc:
+- [[#doom-instructions][Doom instructions]]
+- [[#file-header][File Header]]
+- [[#defaults][Defaults]]
+  - [[#paths][Paths]]
+  - [[#user-interface][User interface]]
+  - [[#editor][Editor]]
+  - [[#org-mode][Org-mode]]
+  - [[#org-agenda][Org-agenda]]
+  - [[#org-capture][Org-capture]]
+- [[#fonts][Fonts]]
+- [[#theme][Theme]]
+- [[#user-interface-1][User interface]]
+- [[#editor-1][Editor]]
+- [[#keybindings][Keybindings]]
+- [[#modeline][Modeline]]
+- [[#beancount][Beancount]]
+- [[#org][Org]]
+  - [[#org-agenda-1][Org-agenda]]
+  - [[#org-auto-tangle][Org-auto-tangle]]
+- [[#registers][Registers]]
+- [[#shells][Shells]]
+
+* Doom instructions
+
+Place your private configuration here! Remember, you do not need to run 'doom
+sync' after modifying this file!
+
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets. It is optional.
+(setq user-full-name "John Doe"
+      user-mail-address "john@doe.com")
+
+Doom exposes five (optional) variables for controlling fonts in Doom:
+
+- `doom-font' -- the primary font to use
+- `doom-variable-pitch-font' -- a non-monospace font (where applicable)
+- `doom-big-font' -- used for `doom-big-font-mode'; use this for
+  presentations or streaming.
+- `doom-symbol-font' -- for symbols
+- `doom-serif-font' -- for the `fixed-pitch-serif' face
+
+See 'C-h v doom-font' for documentation and more examples of what they
+accept. For example:
+
+setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
+     doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
+
+If you or Emacs can't find your font, use 'M-x describe-font' to look them
+up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
+refresh your font settings. If Emacs still can't find your font, it likely
+wasn't installed correctly. Font issues are rarely Doom issues!
+
+Whenever you reconfigure a package, make sure to wrap your config in an
+`after!' block, otherwise Doom's defaults may override your settings. E.g.
+
+  (after! PACKAGE
+    (setq x y))
+
+The exceptions to this rule:
+
+  - Setting file/directory variables (like `org-directory')
+  - Setting variables which explicitly tell you to set them before their
+    package is loaded (see 'C-h v VARIABLE' to look up their documentation).
+  - Setting doom variables (which start with 'doom-' or '+').
+
+Here are some additional functions/macros that will help you configure Doom.
+
+- `load!' for loading external *.el files relative to this one
+- `use-package!' for configuring packages
+- `after!' for running code after a package has loaded
+- `add-load-path!' for adding directories to the `load-path', relative to
+  this file. Emacs searches the `load-path' when you load packages with
+  `require' or `use-package'.
+- `map!' for binding new keys
+
+To get information about any of these functions/macros, move the cursor over
+the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+This will open documentation for it, including demos of how they are used.
+Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
+etc).
+
+You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+they are implemented.
+
+* File Header
+
+#+begin_src emacs-lisp
+;;; $DOOMDIR/config.el --- setup emacs -*- lexical-binding: t; no-byte-compile: t; coding: utf-8-unix;  -*-
+
+;; Author: jvh
+;; Email: jan.vanhest@gmail.com
+
+;;; Commentary:
+
+;; This is the config file for `Doom Emacs' on Emacs 30.5.
+
+;;; Code:
+
+#+end_src
+
+* Defaults
+
+#+begin_src emacs-lisp
+(setq user-full-name "Jan van Hest"
+      user-mail-address "jan.vanhest@gmail.com")
+#+end_src
+
+** Paths
+
+#+begin_src emacs-lisp
+(defvar var-dir (expand-file-name "var" user-emacs-directory))
+(defvar lisp-source-dir (expand-file-name "site-lisp/" user-emacs-directory))
+(add-to-list 'load-path lisp-source-dir t)
+#+end_src
+
+** User interface
+
+#+begin_src emacs-lisp
+(defvar my/frame-transparency 90 "Frame transparency.")
+(defvar my/display-line-numbers-enable
+  '(prog-mode-hook conf-mode-hook) "Modes with line-numbers.")
+#+end_src
+
+** Editor
+
+#+begin_src emacs-lisp
+(defvar my/fill-width 110 "The default width at which to wrap text.")
+(defvar my/tab-width 2 "Default width for indentation, in spaces.")
+(defvar my-leader-key "SPC" "Default leader key.")
+(defvar my-leader-secondary-key "C-SPC" "Secondary leader key.")
+(defvar my-major-leader-key "," "Default major mode leader key.")
+(defvar my-major-leader-secondary-key "M-," "Secondary major mode leader key.")
+#+end_src
+
+** Org-mode
+
+#+begin_src emacs-lisp
+(defvar my/org-dir-local "~/org-files" "Base directory for org related file.")
+(defvar my/org-dir-sync "~/Dropbox/org" "Base dir for syncing to android app.")
+#+end_src
+
+** Org-agenda
+
+#+begin_src emacs-lisp
+(defvar my/agenda-projects (expand-file-name "projects.org" my/org-dir-local)
+  "Inbox file project related tasks.")
+(defvar my/agenda-notes (expand-file-name "notes.org" my/org-dir-local)
+  "Notes file.")
+(defvar my/agenda-archive (expand-file-name "archive.org" my/org-dir-local)
+  "Archive file for DONE TODOs.")
+(defvar my/agenda-index (expand-file-name "index.org" my/org-dir-local)
+  "Inbox file for todo's.")
+(defvar my/agenda-inbox (expand-file-name "inbox.org" my/org-dir-local)
+  "Personal tasks, reminders and so on.")
+#+end_src
+
+** Org-capture
+
+#+begin_src emacs-lisp
+(defvar my/capture-bookmarks (expand-file-name "bookmarks.org" my/org-dir-local)
+  "Captured weblinks.")
+#+end_src
+
+* Fonts
+
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil
+                    :family "JetBrainsMono Nerd Font"
+                    :height 140
+                    :weight 'semi-light)
+
+(set-face-attribute 'fixed-pitch nil
+                    :family "JetBrainsMono Nerd Font"
+                    :height 140
+                    :weight 'semi-light)
+
+(set-face-attribute 'variable-pitch nil
+                    :family "Cantarell"
+                    :height 165
+                    :weight 'regular)
+
+(set-face-attribute 'mode-line nil
+                    :family "SpaceMono Nerd Font"
+                    :height 140
+                    :weight 'semi-light)
+#+end_src
+
+* Theme
+
+There are two ways to load a theme. Both assume the theme is installed and
+available. You can either set `doom-theme' or manually load a theme with the
+`load-theme' function.
+
+#+begin_src emacs-lisp
+(setq custom-safe-themes t)
+
+(setq doom-theme nil)
+
+(require-theme 'modus-themes)
+(setq modus-themes-custom-auto-reload nil
+      modus-themes-to-toggle '(modus-vivendi-deuteranopia
+                               modus-operandi-deuteranopia)
+      modus-themes-mixed-fonts t
+      modus-themes-variable-pitch-ui t
+      modus-themes-italic-constructs t
+      modus-themes-bold-constructs t
+      modus-themes-completions
+      '((matches . (extrabold intense))
+	(selection . (extrabold intense))
+	(popup . (extrabold intense)))
+      modus-themes-prompts '(extrabold)
+      modus-themes-headings
+      '((agenda-structure . (fixed-pitch light 2.2))
+	(agenda-date . (fixed-pitch regular 1.3))
+	(t . (regular 1.15)))
+      modus-themes-fringes 'subtle
+      modus-themes-tabs-accented t
+      modus-themes-paren-match '(bold intense)
+      modus-themes-org-blocks 'tinted-background
+      modus-themes-scale-headings t
+      modus-themes-region '(bg-only))
+
+(setq modus-themes-common-palette-overrides
+      '((bg-mode-line-active bg-lavender)
+	(bg-mode-line-inactive bg-dim)
+	(border-mode-line-inactive bg-inactive)
+	(fringe subtle)
+	(bg-completion gray)
+	(bg-paren-match bg-yellow-intense)))
+
+(setq modus-themes-headings
+      '((1 . (extrabold 1.35))
+        (2 . (bold 1.28))
+        (3 . (bold 1.22))
+        (4 . (bold 1.17))
+        (5 . (bold 1.14))
+        (t . (semibold 1.1))))
+
+(load-theme (car modus-themes-to-toggle) t)
+
+(define-key global-map (kbd "<f5>") #'modus-themes-toggle)
+#+end_src
+
+* User interface
+
+This determines the style of line numbers in effect. If set to `nil', line
+numbers are disabled. For relative line numbers, set this to `relative'.
+
+#+begin_src emacs-lisp
+(setq initial-scratch-message "")
+(customize-set-variable 'initial-major-mode 'emacs-lisp-mode)  ;; for fast loading
+
+;; dired
+(add-hook! 'dired-mode-hook #'all-the-icons-dired-mode)
+
+;; line-numbers
+(global-display-line-numbers-mode)           ; No line numbers unless ...
+(setq-default display-line-numbers-type 'relative
+              display-line-numbers-width 3      ; Enough space for big files
+              display-line-numbers-widen t)     ; Enable dynamic sizing
+;; (dolist (mode my/display-line-numbers-enable)
+;;   (add-hook mode  (lambda () (display-line-numbers-mode -1)))
+
+(setq help-window-select t)    ; Focus new help windows when opened
+
+(global-prettify-symbols-mode t)   ;; Enables use of ligatures in Emacs
+#+end_src
+
+Scrolling experience.
+
+#+begin_src emacs-lisp
+(setq scroll-margin 0
+      fast-but-imprecise-scrolling t   ; Make scrolling less stuttered
+      scroll-conservatively 101        ; > 100
+      scroll-preserve-screen-position t
+      auto-window-vscroll nil)
+#+end_src
+
+* Editor
+
+#+begin_src emacs-lisp
+;; Make shebang (#!) file executable when saved
+(add-hook!
+  ('after-save . #'executable-make-buffer-file-executable-if-script-p))
+
+(setq-default
+ indent-tabs-mode nil
+ tab-width my/tab-width
+ fill-column my/fill-width                      ; Wrap lines after this point
+ word-wrap t
+ require-final-newline t
+ sentence-end-double-space nil)
+
+(setq large-file-warning-threshold 100000000
+      global-auto-revert-non-file-buffers t
+      kill-do-not-save-duplicates t)  ; kill-ring
+
+(set-default-coding-systems 'utf-8)
+(global-superword-mode 1)             ; e.g. this-is-a-symbol is one word
+(global-auto-revert-mode 1)           ; Revert buffers when file has changed
+(global-so-long-mode 1)               ; Support for files with long lines
+#+end_src
+
+* Keybindings
+
+This first bit lets us navigate between windows easier.
+
+#+begin_src emacs-lisp
+(map! :m "C-h" #'evil-window-left
+      :m "C-j" #'evil-window-down
+      :m "C-k" #'evil-window-up
+      :m "C-l" #'evil-window-right)
+#+end_src
+
+* Modeline
+
+#+begin_src emacs-lisp
+(after! doom-modeline
+  (setq doom-modeline-height 30
+        doom-modeline-bar-width 6
+        doom-modeline-buffer-encoding t
+        doom-modeline-lsp t
+        doom-modeline-icon nil
+        doom-modeline-minor-modes nil
+        doom-modeline-buffer-file-name-style 'relative-to-project))
+#+end_src
+
+* Beancount
+
+#+begin_src emacs-lisp
+(after! beancount
+  (setq +beancount-files '("/home/jvh/BeanCount/main-accounts.bean")))
+#+end_src
+
+* Org
+
+#+begin_src emacs-lisp
+(after! org
+  (add-hook! 'org-mode-hook #'org-appear-mode)
+  (add-hook! 'org-mode-hook #'org-bullets-mode)
+  (add-hook! 'org-mode-hook #'(lambda () (display-line-numbers-mode -1)))
+
+  (setq org-directory "~/org-files/"
+        org-tags-column 0
+        org-pretty-entities t
+        org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-ellipsis " 󱞣 "
+        org-catch-invisible-edits 'smart
+        org-log-done 'time
+        org-hide-emphasis-markers t
+        org-support-shift-select t
+        org-src-preserve-indentation nil
+        org-src-tab-acts-natively t
+        org-edit-src-content-indentation 0)
+
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "IDEA(i)" "|" "DONE(d)")))
+  (setq org-todo-keyword-faces
+        '(("TODO" . 'all-the-icons-red)
+          ("NEXT" . 'all-the-icons-blue)
+          ("IDEA" . 'all-the-icons-green)
+          ("DONE" . 'all-the-icons-orange))))
+#+end_src
+
+** Org-agenda
+
+#+begin_src emacs-lisp
+(after! org
+  (setq org-agenda-files '("~/org-files/todo.org" "~/org-files/agenda.org")
+        org-agenda-block-separator 8411)
+
+  (custom-set-faces!
+    '(org-agenda-calendar-event :inherit variable-pitch)
+    '(org-agenda-calendar-sexp :inherit variable-pitch)
+    '(org-agenda-filter-category :inherit variable-pitch)
+    '(org-agenda-filter-tags :inherit variable-pitch)
+    '(org-agenda-date :inherit variable-pitch :weight bold :height 1.09)
+    '(org-agenda-date-weekend :inherit variable-pitch :weight bold :height 1.06)
+    '(org-agenda-done :inherit variable-pitch :weight bold)
+    '(org-agenda-date-today :inherit variable-pitch :weight bold :slant italic :height 1.12)
+    '(org-agenda-date-weekend-today :inherit variable-pitch :weight bold :height 1.09)
+    '(org-agenda-dimmed-todo-face :inherit variable-pitch :weight bold)
+    '(org-agenda-current-time :inherit variable-pitch :weight bold)
+    '(org-agenda-clocking :inherit variable-pitch :weight bold))
+
+  (add-hook! 'org-agenda-mode-hook 'mixed-pitch-mode)
+
+  (add-hook! 'org-agenda-mode-hook (hide-mode-line-mode 1))
+
+  (setq org-priority-faces
+        '((?A :foreground "#ff6c6b" :weight bold)
+          (?B :foreground "#98be65" :weight bold)
+          (?C :foreground "#c678dd" :weight bold))))
+#+end_src
+
+** Org-auto-tangle
+
+=org-auto-tangle= allows you to add the option =#+auto_tangle: t= in your Org file so that it automatically tangles when you save the document.  I have made adding this to your file even easier by creating a function 'dt/insert-auto-tangle-tag' and setting it to a keybinding 'SPC i a'.
+
+#+begin_src emacs-lisp
+(use-package! org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode)
+  :config
+  (setq org-auto-tangle-default t))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(font-lock-add-keywords 'org-mode
+                        '(("^ *\\([-]\\) "
+                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+#+end_src
+
+* Registers
+
+Emacs registers are compartments where you can save text, rectangles and positions for later use. Once you save text or a rectangle in a register, you can copy it into the buffer once or many times; once you save a position in a register, you can jump back to that position once or many times.  The default GNU Emacs keybindings for these commands (with the exception of counsel-register) involves 'C-x r' followed by one or more other keys.  I wanted to make this a little more user friendly, and since I am using Doom Emacs, I choose to replace the 'C-x r' part of the key chords with 'SPC r'.
+
+| COMMAND                          | DESCRIPTION                      | KEYBINDING |
+|----------------------------------+----------------------------------+------------|
+| copy-to-register                 | /Copy to register/                 | SPC r c    |
+| frameset-to-register             | /Frameset to register/             | SPC r f    |
+| insert-register                  | /Insert contents of register/      | SPC r i    |
+| jump-to-register                 | /Jump to register/                 | SPC r j    |
+| list-registers                   | /List registers/                   | SPC r l    |
+| number-to-register               | /Number to register/               | SPC r n    |
+| counsel-register                 | /Interactively choose a register/  | SPC r r    |
+| view-register                    | /View a register/                  | SPC r v    |
+| window-configuration-to-register | /Window configuration to register/ | SPC r w    |
+| increment-register               | /Increment register/               | SPC r +    |
+| point-to-register                | /Point to register/                | SPC r SPC  |
+
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix("r" . "registers")
+       :desc "Copy to register" "c" #'copy-to-register
+       :desc "Frameset to register" "f" #'frameset-to-register
+       :desc "Insert contents of register" "i" #'insert-register
+       :desc "Jump to register" "j" #'jump-to-register
+       :desc "List registers" "l" #'list-registers
+       :desc "Number to register" "n" #'number-to-register
+       :desc "Interactively choose a register" "r" #'counsel-register
+       :desc "View a register" "v" #'view-register
+       :desc "Window configuration to register" "w" #'window-configuration-to-register
+       :desc "Increment register" "+" #'increment-register
+       :desc "Point to register" "SPC" #'point-to-register))
+#+end_src
+
+* Shells
+
+Settings for the various shells and terminal emulators within Emacs.
+
+| COMMAND             | DESCRIPTION                | KEYBINDING |
+|---------------------+----------------------------+------------|
+| +vterm/toggle       | /Toggle vterm popup window/  | SPC v t    |
+
+#+begin_src emacs-lisp
+(setq shell-file-name "/bin/bash"
+      vterm-max-scrollback 5000)
+
+(map! :leader
+      :desc "Vterm popup toggle"     "v t" #'+vterm/toggle)
+#+end_src
+
+#+begin_src emacs-lisp
+(provide 'config)
+;;; config.el ends here
+#+end_src
