@@ -116,7 +116,24 @@
 (customize-set-variable 'initial-major-mode 'emacs-lisp-mode)  ;; for fast loading
 
 ;; dired
-(add-hook! 'dired-mode-hook #'all-the-icons-dired-mode)
+(use-package all-the-icons-dired
+  :defer t
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+
+(defun my-dired-init ()
+  "to be run as hook for `dired-mode'."
+  (dired-hide-details-mode 1))
+
+(add-hook 'dired-mode-hook 'my-dired-init)
+
+;; (add-hook 'dired-mode-hook (lambda () (dired-hide-details-mode 1)))
+;; (use-package dired
+;;   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
+
+;; (add-hook! 'dired-mode-hook #'dired-hide-details-mode)
+
+(setq delete-by-moving-to-trash t
+      trash-directory "~/.local/share/Trash/files/")
 
 ;; line-numbers
 (global-display-line-numbers-mode)           ; No line numbers unless ...
@@ -137,8 +154,7 @@
       auto-window-vscroll nil)
 
 ;; Make shebang (#!) file executable when saved
-(add-hook!
-  ('after-save . #'executable-make-buffer-file-executable-if-script-p))
+(add-hook! 'after-save #'executable-make-buffer-file-executable-if-script-p)
 
 (setq-default
  indent-tabs-mode nil
